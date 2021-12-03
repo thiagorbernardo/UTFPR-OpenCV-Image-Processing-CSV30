@@ -56,40 +56,51 @@ def main():
                 hue = image_copy[y][x][0] - 60
                 Lig = image_copy[y][x][1]
                 Sat = image_copy[y][x][2]
-                if(Lig > 76 and Lig < 178):
-                    if(Sat >76):
-                        if(hue < 0 ):
-                            
-                            hue = (hue * -2) / 120
-                        else:
-                            hue = hue / 120
 
-                        maskHue[y][x] = hue * 255
-                        
-                        maskSat[y][x] = 255
+                # HUE E SATURATION CONFIÁVEL
+                if(Lig > 76 and Lig < 178 and Sat > 76):
+                    if(hue < 0):
+                        maskHue[y][x] = ((hue * -2) / 120) * 255
                     else:
-                        maskSat[y][x] =  Sat
+                        maskHue[y][x] = (hue / 120) * 255
 
+                maskSat[y][x] = Sat
+                
 
-                else:
-                    # if(Lig >  100):
+                # if(Lig > 76 and Lig < 178):
+                #     if(Sat >76):
+                #         if(hue < 0):
+                #             hue = (hue * -2) / 120
+                #         else:
+                #             hue = hue / 120
+
+                #         maskHue[y][x] = hue * 255
+                #         # MASK HUE -> BRANCA ONDE N É VERDE
                         
-                    #     maskLig[y][x] = 255
-                    # elif(Lig < 30):
-                    #     maskLig[y][x] = 0
+                #         maskSat[y][x] = 255
+                #     else:
+                #         # maskHue[y][x] = 0
+                #         maskSat[y][x] =  Sat
 
-                    # else:
-                    maskLig[y][x] = Lig
-                test.append(Sat)
+
+                # else:
+                #     # if(Lig >  100):
+                        
+                #     #     maskLig[y][x] = 255
+                #     # elif(Lig < 30):
+                #     #     maskLig[y][x] = 0
+
+                #     # else:
+                #     maskLig[y][x] = Lig
 
 
         # print(np.average(test))
-        print(np.max(test))
+        # print(np.max(test))
         # print(maskHue)
         # mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
         # Vizualize the mask
-        maskHue = 255 - maskHue
-        # maskSat = 255 - maskSat
+        # maskHue = 255 - maskHue
+        maskSat = 255 - maskSat
         # maskLig = 255 - maskLig
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskHue.bmp", maskHue)
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskSat.bmp", maskSat)
