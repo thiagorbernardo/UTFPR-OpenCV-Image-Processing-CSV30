@@ -15,15 +15,14 @@ sys.setrecursionlimit(3000)
 
 
 def main():
-    #for INPUT_IMAGE in range(0,1):
+    # for INPUT_IMAGE in range(0,1):
     # for INPUT_IMAGE in range(9,10):
     for INPUT_IMAGE in range(10,11):
     # for INPUT_IMAGE in range(11,12):
-    #for INPUT_IMAGE in range(12,13):
+    # for INPUT_IMAGE in range(12,13):
     # for INPUT_IMAGE in range(13,14):
     # for INPUT_IMAGE in range(14,15):
         img = cv2.imread(f"img/{INPUT_IMAGE}.bmp", cv2.IMREAD_COLOR)
-        print(img)
         if img is None:
             print("Erro abrindo a imagem.\n")
             sys.exit()
@@ -33,14 +32,8 @@ def main():
         # Make a copy of the image
         image_copy = img.copy()
 
-        # Display the image copy
-        # cv2.imwrite(f"out/{INPUT_IMAGE}-read.bmp", image_copy)
-        print(image_copy[0][0])
-
-        # Change color to RGB (from BGR)
         image_copy = cv2.cvtColor(image_copy, cv2.COLOR_BGR2HLS)
-        print('Lig')
-        print(image_copy[0][0][2])
+
         
         # maskHue = img.copy()
         # maskSat = img.copy()
@@ -50,7 +43,6 @@ def main():
         maskLig = np.ones(img.shape[:2], dtype="uint8") * 255
         maskSat = np.ones(img.shape[:2], dtype="uint8") * 255
 
-        test = []
         for y in range(image_copy.shape[0]):
             for x in range(image_copy.shape[1]):
                 hue = image_copy[y][x][0] - 60
@@ -64,8 +56,10 @@ def main():
                     else:
                         maskHue[y][x] = (hue / 120) * 255
 
-                maskSat[y][x] = Sat
+                # else:
+                #     maskLig[y][x] = Lig
                 
+                maskSat[y][x] = Sat
 
                 # if(Lig > 76 and Lig < 178):
                 #     if(Sat >76):
@@ -94,18 +88,31 @@ def main():
                 #     maskLig[y][x] = Lig
 
 
-        # print(np.average(test))
-        # print(np.max(test))
-        # print(maskHue)
-        # mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
         # Vizualize the mask
         # maskHue = 255 - maskHue
         maskSat = 255 - maskSat
         # maskLig = 255 - maskLig
+
+        maskFinal = ((maskLig/255)*(maskSat/255)*(maskHue/255))
+        maskFinal = cv2.normalize(maskFinal, maskFinal, 0, 1, cv2.NORM_MINMAX)
+        # maskFinal = np.clip(maskFinal, a_min = 0, a_max = 255)
+
+        masked_image = np.copy(img)
+        # 3 try
+        # for y in range(masked_image.shape[0]):
+        #     for x in range(masked_image.shape[1]):
+        #         for c in range(masked_image.shape[2]):
+        #             masked_image[y][x][c] = maskFinal[y][x] * masked_image[y][x][c]
+
+        # print(np.amax(maskFinal))
+        masked_image[maskFinal < 0.2] = [0, 0, 0]
+        # masked_image[maskFinal < 10 ] = [0, 0, 0]
+
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskHue.bmp", maskHue)
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskSat.bmp", maskSat)
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskLig.bmp", maskLig)
-        cv2.imwrite(f"out/{INPUT_IMAGE}-maskFinal.bmp", ((maskLig/255)*(maskSat/255)*(maskHue/255))*255)
+        cv2.imwrite(f"out/{INPUT_IMAGE}-maskFinal.bmp", maskFinal * 255)
+        cv2.imwrite(f"out/{INPUT_IMAGE}-massked.bmp", masked_image)
         cv2.waitKey()
         cv2.destroyAllWindows()
 
