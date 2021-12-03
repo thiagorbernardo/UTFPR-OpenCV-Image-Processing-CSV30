@@ -58,7 +58,9 @@ def main():
 
                 # else:
                 #     maskLig[y][x] = Lig
-                
+
+                # if(Sat < 100 or Sat > 178):
+                #     maskSat[y][x] = Sat
                 maskSat[y][x] = Sat
 
                 # if(Lig > 76 and Lig < 178):
@@ -93,9 +95,9 @@ def main():
         maskSat = 255 - maskSat
         # maskLig = 255 - maskLig
 
-        maskFinal = ((maskLig/255)*(maskSat/255)*(maskHue/255))
+        maskFinal = 255 - ((maskLig/255)*(maskSat/255)*(maskHue/255))
         maskFinal = cv2.normalize(maskFinal, maskFinal, 0, 1, cv2.NORM_MINMAX)
-        # maskFinal = np.clip(maskFinal, a_min = 0, a_max = 255)
+        # maskFinal = cv2.GaussianBlur(maskFinal, (9, 9), 9)
 
         masked_image = np.copy(img)
         # 3 try
@@ -105,14 +107,19 @@ def main():
         #             masked_image[y][x][c] = maskFinal[y][x] * masked_image[y][x][c]
 
         # print(np.amax(maskFinal))
-        masked_image[maskFinal < 0.2] = [0, 0, 0]
+        masked_image[maskFinal > 0.95] = [0, 0, 0]
         # masked_image[maskFinal < 10 ] = [0, 0, 0]
+        background_image = cv2.imread(f"img/input1.bmp", cv2.IMREAD_COLOR)
+        crop_background = background_image[0:masked_image.shape[0], 0:masked_image.shape[1]]
+        crop_background[maskFinal < 0.95] = [0, 0, 0]
 
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskHue.bmp", maskHue)
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskSat.bmp", maskSat)
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskLig.bmp", maskLig)
         cv2.imwrite(f"out/{INPUT_IMAGE}-maskFinal.bmp", maskFinal * 255)
         cv2.imwrite(f"out/{INPUT_IMAGE}-massked.bmp", masked_image)
+        cv2.imwrite(f"out/{INPUT_IMAGE}-cropppped.bmp", crop_background)
+        cv2.imwrite(f"out/{INPUT_IMAGE}-final.bmp", crop_background + masked_image)
         cv2.waitKey()
         cv2.destroyAllWindows()
 
